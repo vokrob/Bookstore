@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1044106939779",
+    "project_id": "bookstore-ac009",
+    "storage_bucket": "bookstore-ac009.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044106939779:android:829c1a07d7e633ab5bbab6",
+        "android_client_info": {
+          "package_name": "com.vokrob.bookstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq9nMS3cSsmolLGMpeZPKkzjzJ36zCqLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
