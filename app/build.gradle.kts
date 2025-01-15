@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.vokrob.bookstore"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -54,6 +54,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.auth)
 
     implementation(libs.coil.compose)
 
