@@ -9,7 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.vokrob.bookstore.ui.theme.BookstoreTheme
-import com.vokrob.bookstore.ui.theme.main_screen.MainScreen
+import com.vokrob.bookstore.ui.theme.login.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             BookstoreTheme {
-                MainScreen()
+                LoginScreen()
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.vokrob.bookstore.ui.theme.login
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,13 +21,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.vokrob.bookstore.R
 import com.vokrob.bookstore.ui.theme.BoxFilterColor
 
 @Composable
 fun LoginScreen() {
+    val auth = remember { Firebase.auth }
+
+    val errorState = remember { mutableStateOf("") }
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
 
@@ -85,10 +93,78 @@ fun LoginScreen() {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        LoginButton("Sign In") { }
-        LoginButton("Sign Up") { }
+        if (errorState.value.isNotEmpty()) {
+            Text(
+                text = errorState.value,
+                color = Color.Red,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        LoginButton("Sign In") {
+            signIn(
+                auth,
+                emailState.value,
+                passwordState.value,
+                onSignInSuccess = { Log.d("MyLog", "Sign In Success") },
+                onSignInFailure = { error -> errorState.value = error }
+            )
+        }
+
+        LoginButton("Sign Up") {
+            signUp(
+                auth,
+                emailState.value,
+                passwordState.value,
+                onSignUpSuccess = { Log.d("MyLog", "Sign Up Success") },
+                onSignUpFailure = { error -> errorState.value = error }
+            )
+        }
     }
 }
+
+fun signUp(
+    auth: FirebaseAuth,
+    email: String,
+    password: String,
+    onSignUpSuccess: () -> Unit,
+    onSignUpFailure: (String) -> Unit
+) {
+    if (email.isBlank() || password.isBlank()) {
+        onSignUpFailure("Email and password cannot be empty")
+        return
+    }
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) onSignUpSuccess()
+        }
+        .addOnFailureListener {
+            onSignUpFailure(it.message ?: "Sign Up Error")
+        }
+}
+
+fun signIn(
+    auth: FirebaseAuth,
+    email: String,
+    password: String,
+    onSignInSuccess: () -> Unit,
+    onSignInFailure: (String) -> Unit
+) {
+    if (email.isBlank() || password.isBlank()) {
+        onSignInFailure("Email and password cannot be empty")
+        return
+    }
+
+    auth.signInWithEmailAndPassword(email, password)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) onSignInSuccess()
+        }
+        .addOnFailureListener {
+            onSignInFailure(it.message ?: "Sign In Error")
+        }
+}
+
 
 
 
