@@ -34,7 +34,11 @@ fun DrawerBody() {
         "Bestsellers"
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Gray)
+    ) {
         Image(
             modifier = Modifier.fillMaxSize(),
             painter = painterResource(R.drawable.background),
