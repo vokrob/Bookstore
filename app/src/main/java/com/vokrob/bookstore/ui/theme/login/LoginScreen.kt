@@ -35,8 +35,8 @@ fun LoginScreen(onNavigationToMainScreen: (MainScreenDataObject) -> Unit) {
     val auth = remember { Firebase.auth }
 
     val errorState = remember { mutableStateOf("") }
-    val emailState = remember { mutableStateOf("") }
-    val passwordState = remember { mutableStateOf("") }
+    val emailState = remember { mutableStateOf("vokrob.dev@gmail.com") }
+    val passwordState = remember { mutableStateOf("123456789") }
 
     Image(
         painter = painterResource(R.drawable.background),
