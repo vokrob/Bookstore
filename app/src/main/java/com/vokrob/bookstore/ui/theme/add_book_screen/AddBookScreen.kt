@@ -28,7 +28,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import com.vokrob.bookstore.R
+import com.vokrob.bookstore.data.Book
 import com.vokrob.bookstore.ui.theme.BoxFilterColor
 import com.vokrob.bookstore.ui.theme.login.LoginButton
 import com.vokrob.bookstore.ui.theme.login.RoundedCornerTextField
@@ -36,10 +42,15 @@ import com.vokrob.bookstore.ui.theme.login.RoundedCornerTextField
 @Preview(showBackground = true)
 
 @Composable
-fun AddBookScreen() {
+fun AddBookScreen(onSaved: () -> Unit = { }) {
+    var selectedCategory = "Bestsellers"
+
     val title = remember { mutableStateOf("") }
     val description = remember { mutableStateOf("") }
     val price = remember { mutableStateOf("") }
+
+    val firestore = remember { Firebase.firestore }
+    val storage = remember { Firebase.storage }
 
     val selectedImageUri = remember { mutableStateOf<Uri?>(null) }
     val imageLauncher = rememberLauncherForActivityResult(
@@ -87,6 +98,10 @@ fun AddBookScreen() {
 
         Spacer(modifier = Modifier.height(15.dp))
 
+        RoundedCornerDropDownMenu { selectedItem -> selectedCategory = selectedItem }
+
+        Spacer(modifier = Modifier.height(15.dp))
+
         RoundedCornerTextField(
             text = title.value,
             label = "Title"
@@ -117,13 +132,72 @@ fun AddBookScreen() {
         Spacer(modifier = Modifier.height(10.dp))
 
         LoginButton("Select image") { imageLauncher.launch("image/*") }
-        LoginButton("Save") { }
+
+        LoginButton("Save") {
+            saveBookImage(
+                selectedImageUri.value!!,
+                storage,
+                firestore,
+                Book(
+                    title = title.value,
+                    description = description.value,
+                    price = price.value,
+                    category = selectedCategory
+                ),
+                onSaved = { onSaved() },
+                onError = { }
+            )
+        }
     }
 }
 
+private fun saveBookImage(
+    uri: Uri,
+    storage: FirebaseStorage,
+    firestore: FirebaseFirestore,
+    book: Book,
+    onSaved: () -> Unit,
+    onError: () -> Unit
+) {
+    val timeStamp = System.currentTimeMillis()
+    val storageRef = storage.reference
+        .child("book_images")
+        .child("image_$timeStamp.jpg")
+    val uploadTask = storageRef.putFile(uri)
 
+    uploadTask.addOnSuccessListener {
+        storageRef.downloadUrl.addOnSuccessListener { url ->
+            saveBookToFireStore(
+                firestore,
+                url.toString(),
+                book,
+                onSaved = { onSaved() },
+                onError = { onError() }
+            )
+        }
+    }
+}
 
+private fun saveBookToFireStore(
+    firestore: FirebaseFirestore,
+    url: String,
+    book: Book,
+    onSaved: () -> Unit,
+    onError: () -> Unit
+) {
+    val db = firestore.collection("books")
+    val key = db.document().id
 
+    db.document(key)
+        .set(
+            book.copy(
+                key = key,
+                imageUrl = url
+            )
+        )
+        .addOnSuccessListener { onSaved() }
+        .addOnFailureListener { onError() }
+}
 
 
 
