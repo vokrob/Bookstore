@@ -32,6 +32,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.vokrob.bookstore.R
+import com.vokrob.bookstore.ui.theme.ButtonColorBlue
 import com.vokrob.bookstore.ui.theme.DarkTransparentBlue
 import com.vokrob.bookstore.ui.theme.GrayLight
 
@@ -53,7 +54,7 @@ fun DrawerBody(onAdminClick: () -> Unit = { }) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Gray)
+            .background(ButtonColorBlue)
     ) {
         Image(
             modifier = Modifier.fillMaxSize(),
