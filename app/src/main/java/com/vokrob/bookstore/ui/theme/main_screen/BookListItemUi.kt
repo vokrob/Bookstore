@@ -1,5 +1,7 @@
 package com.vokrob.bookstore.ui.theme.main_screen
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,8 +28,15 @@ fun BookListItemUi(book: Book) {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        val base64Image = Base64.decode(book.imageUrl, Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(
+            base64Image,
+            0,
+            base64Image.size
+        )
+
         AsyncImage(
-            model = book.imageUrl,
+            model = bitmap,
             contentDescription = "",
             modifier = Modifier
                 .fillMaxWidth()
