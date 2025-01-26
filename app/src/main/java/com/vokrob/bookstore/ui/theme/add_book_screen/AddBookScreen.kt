@@ -38,20 +38,24 @@ import com.google.firebase.storage.ktx.storage
 import com.vokrob.bookstore.R
 import com.vokrob.bookstore.data.Book
 import com.vokrob.bookstore.ui.theme.BoxFilterColor
+import com.vokrob.bookstore.ui.theme.data.AddScreenObject
 import com.vokrob.bookstore.ui.theme.login.LoginButton
 import com.vokrob.bookstore.ui.theme.login.RoundedCornerTextField
 
 @Preview(showBackground = true)
 
 @Composable
-fun AddBookScreen(onSaved: () -> Unit = { }) {
+fun AddBookScreen(
+    navData: AddScreenObject = AddScreenObject(),
+    onSaved: () -> Unit = { }
+) {
     val cv = LocalContext.current.contentResolver
 
-    var selectedCategory = "Bestsellers"
+    var selectedCategory = navData.category
 
-    val title = remember { mutableStateOf("") }
-    val description = remember { mutableStateOf("") }
-    val price = remember { mutableStateOf("") }
+    val title = remember { mutableStateOf(navData.title) }
+    val description = remember { mutableStateOf(navData.description) }
+    val price = remember { mutableStateOf(navData.price) }
 
     val firestore = remember { Firebase.firestore }
     val storage = remember { Firebase.storage }

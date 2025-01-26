@@ -50,11 +50,27 @@ class MainActivity : ComponentActivity() {
 
                     composable<MainScreenDataObject> { navEntry ->
                         val navData = navEntry.toRoute<MainScreenDataObject>()
-                        MainScreen(navData) { navController.navigate(AddScreenObject) }
+
+                        MainScreen(
+                            navData,
+                            onBookEditClick = { book ->
+                                navController.navigate(
+                                    AddScreenObject(
+                                        key = book.key,
+                                        title = book.title,
+                                        description = book.description,
+                                        price = book.price,
+                                        category = book.category,
+                                        imageUrl = book.imageUrl
+                                    )
+                                )
+                            }
+                        ) { navController.navigate(AddScreenObject()) }
                     }
 
                     composable<AddScreenObject> { navEntry ->
-                        AddBookScreen { navController.popBackStack() }
+                        val navData = navEntry.toRoute<AddScreenObject>()
+                        AddBookScreen(navData)
                     }
                 }
             }

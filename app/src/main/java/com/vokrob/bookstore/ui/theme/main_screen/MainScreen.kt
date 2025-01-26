@@ -28,11 +28,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     navData: MainScreenDataObject,
+    onBookEditClick: (Book) -> Unit,
     onAdminClick: () -> Unit
 ) {
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val booksListState = remember { mutableStateOf(emptyList<Book>()) }
+    val isAdminState = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         val db = Firebase.firestore
@@ -46,7 +49,7 @@ fun MainScreen(
             Column(modifier = Modifier.fillMaxWidth(0.7f)) {
                 DrawerHeader(navData.email)
 
-                DrawerBody {
+                DrawerBody(onAdmin = { isAdmin -> isAdminState.value = isAdmin }) {
                     coroutineScope.launch { drawerState.close() }
                     onAdminClick()
                 }
@@ -63,7 +66,12 @@ fun MainScreen(
                     .fillMaxSize()
                     .padding(paddingValue)
             ) {
-                items(booksListState.value) { book -> BookListItemUi(book) }
+                items(booksListState.value) { book ->
+                    BookListItemUi(
+                        isAdminState.value,
+                        book
+                    ) { book -> onBookEditClick(book) }
+                }
             }
         }
     }

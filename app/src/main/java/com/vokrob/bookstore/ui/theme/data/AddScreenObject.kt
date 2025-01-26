@@ -3,4 +3,11 @@ package com.vokrob.bookstore.ui.theme.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-object AddScreenObject
+data class AddScreenObject(
+    val key: String = "",
+    val title: String = "",
+    val description: String = "",
+    val price: String = "",
+    val category: String = "",
+    val imageUrl: String = ""
+)

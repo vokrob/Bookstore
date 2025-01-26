@@ -37,7 +37,10 @@ import com.vokrob.bookstore.ui.theme.DarkTransparentBlue
 import com.vokrob.bookstore.ui.theme.GrayLight
 
 @Composable
-fun DrawerBody(onAdminClick: () -> Unit = { }) {
+fun DrawerBody(
+    onAdmin: (Boolean) -> Unit = { },
+    onAdminClick: () -> Unit = { }
+) {
     val categoriesList = listOf(
         "Favorites",
         "Fantasy",
@@ -48,7 +51,10 @@ fun DrawerBody(onAdminClick: () -> Unit = { }) {
     val isAdminState = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        isAdmin { isAdmin -> isAdminState.value = isAdmin }
+        isAdmin { isAdmin ->
+            isAdminState.value = isAdmin
+            onAdmin(isAdmin)
+        }
     }
 
     Box(
