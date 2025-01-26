@@ -1,6 +1,8 @@
 package com.vokrob.bookstore.ui.theme.add_book_screen
 
 import android.content.ContentResolver
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -59,15 +61,33 @@ fun AddBookScreen(
     val firestore = remember { Firebase.firestore }
     val storage = remember { Firebase.storage }
 
+    val imageBitmap = remember {
+        var bitmap: Bitmap? = null
+
+        val base64Image = Base64.decode(
+            navData.imageUrl,
+            Base64.DEFAULT
+        )
+
+        bitmap = BitmapFactory.decodeByteArray(
+            base64Image,
+            0,
+            base64Image.size
+        )
+
+        mutableStateOf(bitmap)
+    }
+
     val selectedImageUri = remember { mutableStateOf<Uri?>(null) }
     val imageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
+        imageBitmap.value = null
         selectedImageUri.value = uri
     }
 
     Image(
-        painter = rememberAsyncImagePainter(model = selectedImageUri.value),
+        painter = rememberAsyncImagePainter(model = imageBitmap.value ?: selectedImageUri.value),
         contentDescription = "Background",
         modifier = Modifier.fillMaxSize(),
         contentScale = ContentScale.Crop,
@@ -146,14 +166,17 @@ fun AddBookScreen(
             saveBookToFireStore(
                 firestore,
                 Book(
+                    key = navData.key,
                     title = title.value,
                     description = description.value,
                     price = price.value,
                     category = selectedCategory.value,
-                    imageUrl = imageToBase64(
-                        selectedImageUri.value!!,
-                        cv
-                    )
+                    imageUrl = if (selectedImageUri.value != null) {
+                        imageToBase64(
+                            selectedImageUri.value!!,
+                            cv
+                        )
+                    } else navData.imageUrl
                 ),
                 onSaved = { onSaved() },
                 onError = { }
@@ -176,7 +199,7 @@ private fun saveBookToFireStore(
     onError: () -> Unit
 ) {
     val db = firestore.collection("books")
-    val key = db.document().id
+    val key = book.key.ifEmpty { db.document().id }
 
     db.document(key)
         .set(book.copy(key = key))
