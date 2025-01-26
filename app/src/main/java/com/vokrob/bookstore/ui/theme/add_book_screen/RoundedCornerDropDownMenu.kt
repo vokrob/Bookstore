@@ -20,9 +20,12 @@ import androidx.compose.ui.unit.dp
 import com.vokrob.bookstore.ui.theme.ButtonColor
 
 @Composable
-fun RoundedCornerDropDownMenu(onOptionSelected: (String) -> Unit) {
+fun RoundedCornerDropDownMenu(
+    defCategory: String,
+    onOptionSelected: (String) -> Unit
+) {
     val expanded = remember { mutableStateOf(false) }
-    val selectedOption = remember { mutableStateOf("Bestsellers") }
+    val selectedOption = remember { mutableStateOf(defCategory) }
 
     val categoriesList = listOf(
         "Favorites",

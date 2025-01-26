@@ -51,8 +51,7 @@ fun AddBookScreen(
 ) {
     val cv = LocalContext.current.contentResolver
 
-    var selectedCategory = navData.category
-
+    var selectedCategory = remember { mutableStateOf(navData.category) }
     val title = remember { mutableStateOf(navData.title) }
     val description = remember { mutableStateOf(navData.description) }
     val price = remember { mutableStateOf(navData.price) }
@@ -106,7 +105,9 @@ fun AddBookScreen(
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        RoundedCornerDropDownMenu { selectedItem -> selectedCategory = selectedItem }
+        RoundedCornerDropDownMenu(selectedCategory.value) { selectedItem ->
+            selectedCategory.value = selectedItem
+        }
 
         Spacer(modifier = Modifier.height(15.dp))
 
@@ -148,7 +149,7 @@ fun AddBookScreen(
                     title = title.value,
                     description = description.value,
                     price = price.value,
-                    category = selectedCategory,
+                    category = selectedCategory.value,
                     imageUrl = imageToBase64(
                         selectedImageUri.value!!,
                         cv
