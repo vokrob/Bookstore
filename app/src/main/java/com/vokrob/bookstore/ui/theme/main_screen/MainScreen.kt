@@ -69,8 +69,15 @@ fun MainScreen(
                 items(booksListState.value) { book ->
                     BookListItemUi(
                         isAdminState.value,
-                        book
-                    ) { book -> onBookEditClick(book) }
+                        book,
+                        onEditClick = { },
+                        onFavClick = {
+                            booksListState.value = booksListState.value.map { bk ->
+                                if (bk.key == book.key) bk.copy(isFavorite = !bk.isFavorite)
+                                else bk
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -88,7 +95,6 @@ private fun getAllBooks(
             onBooks(bookList)
         }
 }
-
 
 
 

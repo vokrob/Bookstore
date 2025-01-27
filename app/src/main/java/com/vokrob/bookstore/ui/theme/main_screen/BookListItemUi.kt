@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -32,7 +34,8 @@ import com.vokrob.bookstore.data.Book
 fun BookListItemUi(
     showEditButton: Boolean = false,
     book: Book,
-    onEditClick: (Book) -> Unit = { }
+    onEditClick: (Book) -> Unit = { },
+    onFavClick: () -> Unit = { }
 ) {
     Column(
         modifier = Modifier
@@ -101,6 +104,14 @@ fun BookListItemUi(
                 IconButton(onClick = { onEditClick(book) }) {
                     Icon(
                         Icons.Default.Edit,
+                        contentDescription = ""
+                    )
+                }
+
+                IconButton(onClick = { onFavClick() }) {
+                    Icon(
+                        if (book.isFavorite) Icons.Default.Favorite
+                        else Icons.Default.FavoriteBorder,
                         contentDescription = ""
                     )
                 }
