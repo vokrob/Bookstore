@@ -39,7 +39,17 @@ fun MainScreen(
     val booksListState = remember { mutableStateOf(emptyList<Book>()) }
     val isAdminState = remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) { getAllBooks(db) { books -> booksListState.value = books } }
+    LaunchedEffect(Unit) {
+        getAllFavsIds(
+            db,
+            navData.uid
+        ) { favs ->
+            getAllBooks(
+                db,
+                favs
+            ) { books -> booksListState.value = books }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -92,13 +102,35 @@ fun MainScreen(
 
 private fun getAllBooks(
     db: FirebaseFirestore,
+    idsList: List<String>,
     onBooks: (List<Book>) -> Unit
 ) {
     db.collection("books")
         .get()
         .addOnSuccessListener { task ->
-            val bookList = task.toObjects(Book::class.java)
+            val bookList = task.toObjects(Book::class.java).map {
+                if (idsList.contains(it.key)) it.copy(isFavorite = true)
+                else it
+            }
             onBooks(bookList)
+        }
+}
+
+private fun getAllFavsIds(
+    db: FirebaseFirestore,
+    uid: String,
+    onFavs: (List<String>) -> Unit
+) {
+    db.collection("users")
+        .document(uid)
+        .collection("favs")
+        .get()
+        .addOnSuccessListener { task ->
+            val idsList = task.toObjects(Favorite::class.java)
+            val keyList = arrayListOf<String>()
+
+            idsList.forEach { keyList.add(it.key) }
+            onFavs(keyList)
         }
 }
 
