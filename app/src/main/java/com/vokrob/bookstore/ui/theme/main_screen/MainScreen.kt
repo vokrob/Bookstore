@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.vokrob.bookstore.data.Book
+import com.vokrob.bookstore.data.Favorite
 import com.vokrob.bookstore.ui.theme.login.data.MainScreenDataObject
 import com.vokrob.bookstore.ui.theme.main_screen.bottom_menu.BottomMenu
 import kotlinx.coroutines.launch
@@ -31,16 +32,14 @@ fun MainScreen(
     onBookEditClick: (Book) -> Unit,
     onAdminClick: () -> Unit
 ) {
+    val db = remember { Firebase.firestore }
     val coroutineScope = rememberCoroutineScope()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val booksListState = remember { mutableStateOf(emptyList<Book>()) }
     val isAdminState = remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        val db = Firebase.firestore
-        getAllBooks(db) { books -> booksListState.value = books }
-    }
+    LaunchedEffect(Unit) { getAllBooks(db) { books -> booksListState.value = books } }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -73,8 +72,15 @@ fun MainScreen(
                         onEditClick = { },
                         onFavClick = {
                             booksListState.value = booksListState.value.map { bk ->
-                                if (bk.key == book.key) bk.copy(isFavorite = !bk.isFavorite)
-                                else bk
+                                if (bk.key == book.key) {
+                                    onFavs(
+                                        db,
+                                        navData.uid,
+                                        Favorite(bk.key),
+                                        !bk.isFavorite
+                                    )
+                                    bk.copy(isFavorite = !bk.isFavorite)
+                                } else bk
                             }
                         }
                     )
@@ -96,7 +102,26 @@ private fun getAllBooks(
         }
 }
 
-
+private fun onFavs(
+    db: FirebaseFirestore,
+    uid: String,
+    favorite: Favorite,
+    isFav: Boolean,
+) {
+    if (isFav) {
+        db.collection("users")
+            .document(uid)
+            .collection("favs")
+            .document(favorite.key)
+            .set(favorite)
+    } else {
+        db.collection("users")
+            .document(uid)
+            .collection("favs")
+            .document(favorite.key)
+            .delete()
+    }
+}
 
 
 
