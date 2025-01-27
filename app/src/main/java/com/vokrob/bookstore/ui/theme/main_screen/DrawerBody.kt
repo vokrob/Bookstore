@@ -39,7 +39,8 @@ import com.vokrob.bookstore.ui.theme.GrayLight
 @Composable
 fun DrawerBody(
     onAdmin: (Boolean) -> Unit = { },
-    onAdminClick: () -> Unit = { }
+    onAdminClick: () -> Unit = { },
+    onFavClick: () -> Unit = { }
 ) {
     val categoriesList = listOf(
         "Favorites",
@@ -97,7 +98,7 @@ fun DrawerBody(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { }
+                            .clickable { onFavClick() }
                     ) {
                         Spacer(modifier = Modifier.height(12.dp))
 
