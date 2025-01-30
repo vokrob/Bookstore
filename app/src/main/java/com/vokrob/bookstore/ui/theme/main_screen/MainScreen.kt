@@ -42,7 +42,7 @@ fun MainScreen(
 
     LaunchedEffect(Unit) {
         getAllFavsIds(db, navData.uid) { favs ->
-            getAllBooks(db, favs) { books ->
+            getAllBooks(db, favs, "Fantasy") { books ->
                 booksListState.value = books
             }
         }
@@ -68,6 +68,13 @@ fun MainScreen(
                     onAdminClick = {
                         coroutineScope.launch { drawerState.close() }
                         onAdminClick()
+                    },
+                    onCategoryClick = { category ->
+                        getAllFavsIds(db, navData.uid) { favs ->
+                            getAllBooks(db, favs, category) { books ->
+                                booksListState.value = books
+                            }
+                        }
                     }
                 )
             }
@@ -86,7 +93,7 @@ fun MainScreen(
                     },
                     onHomeClick = {
                         getAllFavsIds(db, navData.uid) { favs ->
-                            getAllBooks(db, favs) { books ->
+                            getAllBooks(db, favs, "Fantasy") { books ->
                                 booksListState.value = books
                             }
                         }
@@ -128,9 +135,11 @@ fun MainScreen(
 private fun getAllBooks(
     db: FirebaseFirestore,
     idsList: List<String>,
+    category: String,
     onBooks: (List<Book>) -> Unit
 ) {
     db.collection("books")
+        .whereEqualTo("category", category)
         .get()
         .addOnSuccessListener { task ->
             val bookList = task.toObjects(Book::class.java).map {
@@ -147,10 +156,7 @@ private fun getAllFavsBooks(
     onBooks: (List<Book>) -> Unit
 ) {
     db.collection("books")
-        .whereIn(
-            FieldPath.documentId(),
-            idsList
-        )
+        .whereIn(FieldPath.documentId(), idsList)
         .get()
         .addOnSuccessListener { task ->
             val bookList = task.toObjects(Book::class.java).map {
