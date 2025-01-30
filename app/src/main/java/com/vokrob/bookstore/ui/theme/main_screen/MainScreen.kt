@@ -1,5 +1,6 @@
 package com.vokrob.bookstore.ui.theme.main_screen
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,13 +11,16 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -41,10 +45,12 @@ fun MainScreen(
     val booksListState = remember { mutableStateOf(emptyList<Book>()) }
     val isAdminState = remember { mutableStateOf(false) }
     val selectedBottomItemState = remember { mutableStateOf(BottomMenuItem.Home.title) }
+    val isFavListEmptyState = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         getAllFavsIds(db, navData.uid) { favs ->
             getAllBooks(db, favs) { books ->
+                isFavListEmptyState.value = books.isEmpty()
                 booksListState.value = books
             }
         }
@@ -64,6 +70,7 @@ fun MainScreen(
 
                         getAllFavsIds(db, navData.uid) { favs ->
                             getAllFavsBooks(db, favs) { books ->
+                                isFavListEmptyState.value = books.isEmpty()
                                 booksListState.value = books
                             }
                         }
@@ -101,6 +108,7 @@ fun MainScreen(
 
                         getAllFavsIds(db, navData.uid) { favs ->
                             getAllFavsBooks(db, favs) { books ->
+                                isFavListEmptyState.value = books.isEmpty()
                                 booksListState.value = books
                             }
                         }
@@ -110,6 +118,7 @@ fun MainScreen(
 
                         getAllFavsIds(db, navData.uid) { favs ->
                             getAllBooks(db, favs) { books ->
+                                isFavListEmptyState.value = books.isEmpty()
                                 booksListState.value = books
                             }
                         }
@@ -117,6 +126,18 @@ fun MainScreen(
                 )
             }
         ) { paddingValue ->
+            if (isFavListEmptyState.value) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Empty list",
+                        color = Color.LightGray
+                    )
+                }
+            }
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
@@ -190,16 +211,18 @@ private fun getAllFavsBooks(
     idsList: List<String>,
     onBooks: (List<Book>) -> Unit
 ) {
-    db.collection("books")
-        .whereIn(FieldPath.documentId(), idsList)
-        .get()
-        .addOnSuccessListener { task ->
-            val bookList = task.toObjects(Book::class.java).map {
-                if (idsList.contains(it.key)) it.copy(isFavorite = true)
-                else it
+    if (idsList.isNotEmpty()) {
+        db.collection("books")
+            .whereIn(FieldPath.documentId(), idsList)
+            .get()
+            .addOnSuccessListener { task ->
+                val bookList = task.toObjects(Book::class.java).map {
+                    if (idsList.contains(it.key)) it.copy(isFavorite = true)
+                    else it
+                }
+                onBooks(bookList)
             }
-            onBooks(bookList)
-        }
+    } else onBooks(emptyList())
 }
 
 private fun getAllFavsIds(
