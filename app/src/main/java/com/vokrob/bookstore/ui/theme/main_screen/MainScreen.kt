@@ -25,6 +25,7 @@ import com.vokrob.bookstore.data.Book
 import com.vokrob.bookstore.data.Favorite
 import com.vokrob.bookstore.ui.theme.login.data.MainScreenDataObject
 import com.vokrob.bookstore.ui.theme.main_screen.bottom_menu.BottomMenu
+import com.vokrob.bookstore.ui.theme.main_screen.bottom_menu.BottomMenuItem
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,10 +40,11 @@ fun MainScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val booksListState = remember { mutableStateOf(emptyList<Book>()) }
     val isAdminState = remember { mutableStateOf(false) }
+    val selectedBottomItemState = remember { mutableStateOf(BottomMenuItem.Home.title) }
 
     LaunchedEffect(Unit) {
         getAllFavsIds(db, navData.uid) { favs ->
-            getAllBooks(db, favs, "Fantasy") { books ->
+            getAllBooks(db, favs) { books ->
                 booksListState.value = books
             }
         }
@@ -58,6 +60,8 @@ fun MainScreen(
                 DrawerBody(
                     onAdmin = { isAdmin -> isAdminState.value = isAdmin },
                     onFavClick = {
+                        selectedBottomItemState.value = BottomMenuItem.Favs.title
+
                         getAllFavsIds(db, navData.uid) { favs ->
                             getAllFavsBooks(db, favs) { books ->
                                 booksListState.value = books
@@ -71,10 +75,17 @@ fun MainScreen(
                     },
                     onCategoryClick = { category ->
                         getAllFavsIds(db, navData.uid) { favs ->
-                            getAllBooks(db, favs, category) { books ->
-                                booksListState.value = books
+                            if (category == "All") {
+                                getAllBooks(db, favs) { books ->
+                                    booksListState.value = books
+                                }
+                            } else {
+                                getAllBooksFromCategory(db, favs, category) { books ->
+                                    booksListState.value = books
+                                }
                             }
                         }
+                        coroutineScope.launch { drawerState.close() }
                     }
                 )
             }
@@ -84,7 +95,10 @@ fun MainScreen(
             modifier = Modifier.fillMaxSize(),
             bottomBar = {
                 BottomMenu(
+                    selectedBottomItemState.value,
                     onFavsClick = {
+                        selectedBottomItemState.value = BottomMenuItem.Favs.title
+
                         getAllFavsIds(db, navData.uid) { favs ->
                             getAllFavsBooks(db, favs) { books ->
                                 booksListState.value = books
@@ -92,8 +106,10 @@ fun MainScreen(
                         }
                     },
                     onHomeClick = {
+                        selectedBottomItemState.value = BottomMenuItem.Home.title
+
                         getAllFavsIds(db, navData.uid) { favs ->
-                            getAllBooks(db, favs, "Fantasy") { books ->
+                            getAllBooks(db, favs) { books ->
                                 booksListState.value = books
                             }
                         }
@@ -124,6 +140,9 @@ fun MainScreen(
                                     bk.copy(isFavorite = !bk.isFavorite)
                                 } else bk
                             }
+                            if (selectedBottomItemState.value == BottomMenuItem.Favs.title) {
+                                booksListState.value = booksListState.value.filter { it.isFavorite }
+                            }
                         }
                     )
                 }
@@ -132,7 +151,7 @@ fun MainScreen(
     }
 }
 
-private fun getAllBooks(
+private fun getAllBooksFromCategory(
     db: FirebaseFirestore,
     idsList: List<String>,
     category: String,
@@ -140,6 +159,22 @@ private fun getAllBooks(
 ) {
     db.collection("books")
         .whereEqualTo("category", category)
+        .get()
+        .addOnSuccessListener { task ->
+            val bookList = task.toObjects(Book::class.java).map {
+                if (idsList.contains(it.key)) it.copy(isFavorite = true)
+                else it
+            }
+            onBooks(bookList)
+        }
+}
+
+private fun getAllBooks(
+    db: FirebaseFirestore,
+    idsList: List<String>,
+    onBooks: (List<Book>) -> Unit
+) {
+    db.collection("books")
         .get()
         .addOnSuccessListener { task ->
             val bookList = task.toObjects(Book::class.java).map {
