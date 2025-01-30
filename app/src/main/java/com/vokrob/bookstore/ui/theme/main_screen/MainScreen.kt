@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     navData: MainScreenDataObject,
     onBookEditClick: (Book) -> Unit,
+    onBookClick: (Book) -> Unit,
     onAdminClick: () -> Unit
 ) {
     val db = remember { Firebase.firestore }
@@ -148,7 +149,8 @@ fun MainScreen(
                     BookListItemUi(
                         isAdminState.value,
                         book,
-                        onEditClick = { },
+                        onBookClick = { bk -> onBookClick(bk) },
+                        onEditClick = { onBookEditClick(it) },
                         onFavClick = {
                             booksListState.value = booksListState.value.map { bk ->
                                 if (bk.key == book.key) {

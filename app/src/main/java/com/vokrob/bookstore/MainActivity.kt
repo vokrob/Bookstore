@@ -15,6 +15,8 @@ import androidx.navigation.toRoute
 import com.vokrob.bookstore.ui.theme.BookstoreTheme
 import com.vokrob.bookstore.ui.theme.add_book_screen.AddBookScreen
 import com.vokrob.bookstore.ui.theme.data.AddScreenObject
+import com.vokrob.bookstore.ui.theme.details_screen.data.DetailsNavObject
+import com.vokrob.bookstore.ui.theme.details_screen.ui.DetailsScreen
 import com.vokrob.bookstore.ui.theme.login.LoginScreen
 import com.vokrob.bookstore.ui.theme.login.data.LoginScreenObject
 import com.vokrob.bookstore.ui.theme.login.data.MainScreenDataObject
@@ -53,6 +55,17 @@ class MainActivity : ComponentActivity() {
 
                         MainScreen(
                             navData,
+                            onBookClick = { bk ->
+                                navController.navigate(
+                                    DetailsNavObject(
+                                        title = bk.title,
+                                        description = bk.description,
+                                        price = bk.price,
+                                        category = bk.category,
+                                        imageUrl = bk.imageUrl
+                                    )
+                                )
+                            },
                             onBookEditClick = { book ->
                                 navController.navigate(
                                     AddScreenObject(
@@ -71,6 +84,11 @@ class MainActivity : ComponentActivity() {
                     composable<AddScreenObject> { navEntry ->
                         val navData = navEntry.toRoute<AddScreenObject>()
                         AddBookScreen(navData) { navController.popBackStack() }
+                    }
+
+                    composable<DetailsNavObject> { navEntry ->
+                        val navData = navEntry.toRoute<DetailsNavObject>()
+                        DetailsScreen(navData)
                     }
                 }
             }

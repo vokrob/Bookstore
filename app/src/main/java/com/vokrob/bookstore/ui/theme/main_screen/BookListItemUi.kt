@@ -3,6 +3,7 @@ package com.vokrob.bookstore.ui.theme.main_screen
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,12 +36,14 @@ fun BookListItemUi(
     showEditButton: Boolean = false,
     book: Book,
     onEditClick: (Book) -> Unit = { },
-    onFavClick: () -> Unit = { }
+    onFavClick: () -> Unit = { },
+    onBookClick: (Book) -> Unit = { }
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
+            .clickable { onBookClick(book) }
     ) {
         var bitmap: Bitmap? = null
 
